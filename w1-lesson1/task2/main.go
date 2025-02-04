@@ -1,48 +1,93 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
-func main() {
-	uzsInRuble := 110.00
-	uzsInEuro := 13313.00
-	uzsInUsd := 12979.39
-  
-	var amount float64
-  var choice int
-	var msg string = ""
+const (
+	uzsInRuble = 110.00
+	uzsInEuro  = 13313.00
+	uzsInUsd   = 12979.39
+)
 
-  fmt.Println("Valuta to UZS Converter")
-	
-	fmt.Println("1. RUBLE")
-	fmt.Println("2. USD")
-	fmt.Println("3. EURO")
+type Currency struct {
+	Name  string
+	Rate  float64
+	Label string
+}
 
-	fmt.Print("Enter your choice: ")
-  fmt.Scan(&choice)
+var currencies = map[string]Currency{
+	"1": {
+		"RUBLE",
+		uzsInRuble,
+		"RUBLE",
+	},
+	"2": {
+		"USD",
+		uzsInUsd,
+		"USD",
+	},
+	"3": {
+		"EURO",
+		uzsInEuro,
+		"EURO",
+	},
+}
 
-	switch choice {
-	
-	case 1:
-		fmt.Print("Enter amount in RUBLE: ")
-		fmt.Scan(&amount)
-		result := amount * uzsInRuble
-		msg = fmt.Sprintf("%.2f RUBLE = %.2f UZS", amount, result)
+func logMenu() {
+	fmt.Println("====================")
+	fmt.Println("Valuta to UZS Converter")
 
-	case 2:
-		fmt.Print("Enter amount in USD: ")
-		fmt.Scan(&amount)
-		result := amount * uzsInUsd
-		msg = fmt.Sprintf("%.2f USD = %.2f UZS", amount, result)
-	
-	case 3:
-		fmt.Print("Enter amount in EURO: ")
-		fmt.Scan(&amount)
-		result := amount * uzsInEuro
-		msg = fmt.Sprintf("%.2f EURO = %.2f UZS", amount, result)
-	
-	default:
-		fmt.Println("Invalid choice")
+	for key, currency := range currencies {
+		fmt.Printf("%s. %s\n", key, currency.Name)
 	}
 
-  fmt.Println(msg)
+	fmt.Println("x. Exit")
+	fmt.Println("====================")
+}
+
+func getAmount(currencyLabel string) float64 {
+	var amount float64
+	fmt.Printf("Enter amount in %s: ", currencyLabel)
+	_, err := fmt.Scan(&amount)
+	if err != nil {
+		fmt.Println("Invalid input. Please enter a numeric value.")
+		return 0
+	}
+	return amount
+}
+
+func main() {
+	isRunning := true
+
+	for isRunning {
+		logMenu()
+
+		var choice string
+		fmt.Print("Enter your choice: ")
+		fmt.Scan(&choice)
+		choice = strings.ToLower(choice)
+
+		if choice == "x" {
+			isRunning = false
+			fmt.Println("Exiting...")
+			continue
+		}
+
+		currency, exists := currencies[choice]
+		if !exists {
+			fmt.Println("Invalid choice")
+			continue
+		}
+
+		amount := getAmount(currency.Label)
+		if amount <= 0 {
+			continue
+		}
+
+		result := amount * currency.Rate
+		msg := fmt.Sprintf("%.2f %s = %.2f UZS", amount, currency.Label, result)
+		fmt.Println(msg)
+	}
 }
